@@ -9,7 +9,6 @@ const int thermistorPin = A0;
 const int potentiometerPin = A1;    
 const int relayPin = 3;             
 const int TempRange = 100;  
-const int hyst = 2;  // hyst to keep a check for rapid on/off 
 
 void setup() {
   pinMode(relayPin, OUTPUT);
@@ -24,9 +23,9 @@ void loop() {
   float actualTemperature = mapTemperature(thermistorValue);
   int potentiometerReading = analogRead(potentiometerPin);
   float ControlledTemp = mapTemperature(potentiometerReading);
-  if (actualTemperature < (ControlledTemp - hyst)) {
+  if (actualTemperature < ControlledTemp ) {
     digitalWrite(relayPin, LOW);  // Turn on the heater
-  } else if (actualTemperature > (ControlledTemp + hyst)) {
+  } else if (actualTemperature > ControlledTemp ) {
     digitalWrite(relayPin, HIGH);   // Turn off the heater
   }
 
