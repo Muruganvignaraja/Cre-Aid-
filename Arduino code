@@ -1,0 +1,48 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+const int thermistorPin = A0;       
+const int potentiometerPin = A1;    
+const int relayPin = 3;             
+const int TempRange = 100;  
+const int hyst = 2;  // hyst to keep a check for rapid on/off 
+
+void setup() {
+  pinMode(relayPin, OUTPUT);
+  digitalWrite(relayPin, HIGH); //initilaize the current state of the relay
+  Serial.begin(9600);
+  display.clearDisplay();
+  display.display();
+}
+
+void loop() {
+  int thermistorValue = analogRead(thermistorPin);
+  float actualTemperature = mapTemperature(thermistorValue);
+  int potentiometerReading = analogRead(potentiometerPin);
+  float ControlledTemp = mapTemperature(potentiometerReading);
+  if (actualTemperature < (ControlledTemp - hyst)) {
+    digitalWrite(relayPin, LOW);  // Turn on the heater
+  } else if (actualTemperature > (ControlledTemp + hyst)) {
+    digitalWrite(relayPin, HIGH);   // Turn off the heater
+  }
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.print("Current Temp: ");
+  display.println(actualTemperature);
+  display.print("Expecting Temp: ");
+  display.println(ControlledTemp);
+  display.display();
+
+  delay(10000); 
+}
+
+float mapTemperature(int analogValue) {
+  return map(analogValue, 0, 1023, 0, TempRange);// to map the values from 0-1023 (as arduino is a 10-BIT ADC)
+}
